@@ -1,18 +1,33 @@
 import pg from "pg";
+import dotenv from "dotenv";
 
-const config = {
-  user: "postgres",
-  database: "cloudinary",
-  password: "1967",
-  port: 5432,
-  max: 10, // max number of clients in the pool
-  idleTimeoutMillis: 30000,
-};
+dotenv.config();
 
-const pool = new pg.Pool(config);
+//set the production variable. this will be called when deployed to a live host
+const isProduction = process.env.NODE_ENV === "production";
 
+//configuration details
+const connectionString = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_DATABASE}`;
+
+// const config = {
+//   user: "",
+//   database: "",
+//   password: "",
+//   port: 5432,
+//   max: 10, // max number of clients in the pool
+//   idleTimeoutMillis: 30000,
+// };
+//if project has been deployed, connect with host database url
+// else connect with the local DATABASE_URL
+
+const pool = new pg.Pool({
+  connectionString: isProduction ? process.env.DATABASE_URL : connectionString,
+  ssl: isProduction,
+});
+
+//
 pool.on("connect", () => {
-  console.log("connected to the Database");
+  console.log("Teamwork database connected to the Database");
 });
 
 const createTables = () => {
